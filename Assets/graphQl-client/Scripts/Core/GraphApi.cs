@@ -93,21 +93,32 @@ namespace GraphQlClient.Core
 
         #region Utility
 
-        private static string JsonToArgument(string jsonInput){
+        private static string JsonToArgument(string jsonInput)
+        {
             char[] jsonChar = jsonInput.ToCharArray();
             List<int> indexes = new List<int>();
+            bool insideString = false;
             jsonChar[0] = ' ';
             jsonChar[jsonChar.Length - 1] = ' ';
-            for (int i = 0; i < jsonChar.Length; i++){
-                if (jsonChar[i] == '\"'){
-                    if (indexes.Count == 2)
-                        indexes = new List<int>();
+
+            for (int i = 0; i < jsonChar.Length; i++)
+            {
+                if (jsonChar[i] == '\"')
+                {
+                    insideString = !insideString;
+
+                    if (insideString)
+                    {
+                        indexes.Clear();
+                    }
                     indexes.Add(i);
                 }
 
-                if (jsonChar[i] == ':'){
+                if (jsonChar[i] == ':' && !insideString && indexes.Count == 2)
+                {
                     jsonChar[indexes[0]] = ' ';
                     jsonChar[indexes[1]] = ' ';
+                    indexes.Clear();
                 }
             }
 
